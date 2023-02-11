@@ -53,6 +53,7 @@ namespace TP_UI2.Controllers
             int azaza=0;
             int gfgfg=0;
             string on;
+            string off;
             return View();
         }
         public IActionResult CandidateLogin
