@@ -70,6 +70,11 @@ namespace TP_UI2.Controllers
         {
             return View();
         }
+
+        public IActionResult Results1()
+        {
+            return View();
+        }
         public IActionResult LoginPost(string email, string password)
         {
 
