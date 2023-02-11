@@ -50,6 +50,7 @@ namespace TP_UI2.Controllers
         }
         public IActionResult Riz()
         {
+            int azaza=0;
             return View();
         }
         public IActionResult CandidateLogin
