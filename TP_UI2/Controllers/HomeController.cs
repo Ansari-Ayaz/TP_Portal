@@ -48,6 +48,10 @@ namespace TP_UI2.Controllers
         {
             return View();
         }
+        public IActionResult Riz()
+        {
+            return View();
+        }
         public IActionResult CandidateLogin
             ()
         {
