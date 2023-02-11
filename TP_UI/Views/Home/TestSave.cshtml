@@ -1,0 +1,61 @@
+﻿<form class="for">
+    <div class="row">
+        <div class="col-md-12">
+            <label ><b>No.of Question</b></label>
+            <input id="txtTestName" class="form-control" type="text"/>
+        </div>
+    </div><br>
+    <div class="row">
+        <div class="col-md-4">
+            <label ><b>No.of Question</b></label>
+            <input id="txtNoOfQues" type="text" class="form-control"/>
+        </div>
+        <div class="col-md-4">
+            <label ><b>Points per Question</b></label>
+            <input id="txtPoPerQues" type="number" class="form-control"/>
+        </div>
+        <div class="col-md-4">
+            <label ><b>Time Per Question</b></label>
+            <input id="txtTmPerQues" type="number" class="form-control"/>
+        </div>
+    </div><br>
+    <div class="row">
+        <div class="col-md-2">
+            <button id="btnTestSave" class="btn btn-primary" type="button" onclick="SaveTicket()">Save</button>
+        </div>
+    </div>
+    
+</form>
+@section Scripts{
+    <script>
+        $(document).ready(function(){
+
+        })
+        function SaveTicket(){
+            var obj = {
+                testName:$("#txtTestName").val(),
+                no_Of_Q:parseInt($("#txtNoOfQues").val()),
+                perQ_Point:parseInt($("#txtPoPerQues").val()),
+                perQ_Time_Min:parseInt($("#txtTmPerQues").val()),
+                }
+                $.ajax({
+                    url:"https://localhost:44327/api/TP/SaveTest",
+                    type:"POST",
+                    contentType:"application/json",
+                    data:JSON.stringify(obj),
+                    async:false,
+                    success:function(resp){
+                        SwitchToQuestionScreen(resp.respObj);
+                    },
+                    error:function(err){
+                       swal("Something Went Wrong!","Test Not Save","error")
+                    }
+                })
+        }
+        function SwitchToQuestionScreen(Id){
+            window.location.href = window.location.origin + "/Home/QuesOptSave/?Id="+Id;
+        }
+        
+        
+    </script>
+}

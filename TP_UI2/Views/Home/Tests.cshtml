@@ -1,0 +1,151 @@
+﻿<form>
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Test Name</label>
+                    <input id="txtTest" type="text" class="form-control form-control-sm " placeholder="Type Test Name..">
+                </div>
+                <div class="col-md-2">
+                    <label>No. Of Questions</label>
+                    <input id="txtNoQues" type="number" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label>Points Per Question</label>
+                    <input id="txtPoiQues" type="number" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label>Time Per Question(Min)</label>
+                    <input id="txtTmQues" type="number" class="form-control form-control-sm">
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button id="btnSave" class="btn btn-primary" onclick="SaveTest()" type="button">Save</button>
+        </div>
+    </div>
+</form>
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <table id="tblTest" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Test Name</th>
+                            <th></th>
+                            <th>Number Of Question</th>
+                            <th>Points Per Question</th>
+                            <th>Time Per Question</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+<script>
+    $(document).ready(function(){
+        ViewAllTest();
+    })
+
+    $(document).on('keyup', 'input[id^=txt]', function(){
+        if($(this).val().trim()){
+            $(this).removeClass('is-invalid');
+            if($(this).attr('type')=="number" && parseInt($(this).val())==0 ){
+                $(this).addClass('is-invalid');
+            }
+        }else{
+            $(this).addClass('is-invalid');
+        }
+    });
+    
+    function SaveTest(){
+        var isValid = true;
+        if(!$("#txtTest").val().trim()){
+            $("#txtTest").addClass("is-invalid");
+            isValid = false;
+        }
+        if(!$("#txtNoQues").val().trim() || parseInt($("#txtNoQues").val())==0 ){
+            $("#txtNoQues").addClass("is-invalid");
+            isValid = false;
+        }
+        if(!$("#txtPoiQues").val().trim() || parseInt($("#txtPoiQues").val())==0 ){
+            $("#txtPoiQues").addClass("is-invalid");
+            isValid = false;
+        }
+        if(!$("#txtTmQues").val().trim() || parseInt($("#txtTmQues").val())==0 ){
+            $("#txtTmQues").addClass("is-invalid");
+            isValid = false;
+        }
+
+        if(!isValid){
+            return;
+        }
+        var obj ={
+            ownerId:user.UserId,
+            testName:$("#txtTest").val(),
+            no_Of_Q:parseInt($("#txtNoQues").val()),
+            perQ_Point:parseInt($("#txtPoiQues").val()),
+            perQ_Time_Min:parseInt($("#txtTmQues").val()),
+            createdBy:user.CreatedBy
+        }
+        $.ajax({
+            url: baseUrl + "tp/SaveTest",
+            type:"POST",
+            contentType:"application/json",
+            async:false,
+            data:JSON.stringify(obj),
+            success:function(resp){
+                Swal.fire('Saved!', 'Test Saved Successfully', 'success')
+            },
+            error:function(err){
+                Swal.fire('Error','Something Went Wrong','error')
+            }
+        })
+
+    }
+    function SwitchToQueOptScr(Id){
+        window.location.href = window.location.origin + "/Home/Questions/?Id="+Id
+    }
+    function SwitchToScheduleScreen(Id,tName){
+        window.location.href = window.location.origin + `/Home/CreateSchedule/?Id=${Id}&&TestName=${tName}`
+    }
+    
+    function ViewAllTest(){
+        $("#tblTest").dataTable({
+            "ajax":{
+                url: baseUrl + "tp/GetAllTests",
+                type:"GET",
+                contentType:"application/json",
+                async:false,
+                dataType:"JSON",
+                dataSrc:""
+            },
+            "columns":[
+                {"data":"testName"},
+                {
+                    "data":null,
+                    "render":function(a,b,c){
+                        return `<i class="fa-solid fa-pen-to-square" onclick="SwitchToQueOptScr('${c.testId}')"></i>`
+                    }
+                },
+                {"data":"no_Of_Q"},
+                {"data":"perQ_Point"},
+                {"data":"perQ_Time_Min"},
+                {
+                    "data":null,
+                    "render":function(a,b,c){
+                        return `<i class="fa-solid fa-clock" onclick="SwitchToScheduleScreen('${c.testId}','${c.testName}')"></i>`
+                    }
+                }
+            ]
+        })
+    }
+</script>
+
+}

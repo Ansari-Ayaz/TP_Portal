@@ -1,0 +1,140 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<style>
+    .rowBr {
+        margin-bottom: 10px;
+    }
+</style>
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label>Test Name</label>
+                <input id="txtTestName" class="form-control" disabled />
+            </div>
+            <div class="col-md-3">
+                <label>Start Time</label>
+                <input id="txtStartTime" class="form-control" placeholder="Enter Start Time" type="date" />
+            </div>
+            <div class="col-md-3">
+                <label>End Time</label>
+                <input id="txtEndTime" class="form-control" placeholder="Enter Stop Time" type="date" />
+            </div>
+            <div class="col-md-3">
+                <button id="btnSave" type="button" class="btn btn-primary" style="margin-top:1.9rem" onclick="SaveSchCand()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="card">
+        <div id="divMain" class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <table id="tblCand" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<template id="tmplMain">
+    <tr>
+        <td>
+            <input type="text" placeholder="Enter Email" class="form-control email" />
+        </td>
+        <td>
+            <input type="text" placeholder="Enter Name" class="form-control name" />
+        </td>
+        <td class="tdAdd"><button class="btn btn-primary btnAdd">Add</button></td>
+        <td id="tdRmv"><button class="btn btn-danger btnRmv">Remove</button></td>
+    </tr>
+</template>
+
+<template id="tmplAdd">
+    <button class="btn btn-primary btnAdd">Add</button>
+</template>
+
+<template id="tmplRmv">
+    <button class="btn btn-danger btnRmv">Remove</button>
+</template>
+
+@section Scripts{
+<script>
+    var params = new URLSearchParams(window.location.search)
+    var id = params.get('Id')
+    var testName = params.get('TestName')
+    $(document).ready(function(){
+        $("tbody").append($("#tmplMain").html());
+        $("#divMain tbody .btnRmv ").remove();
+        $("#txtTestName").val(testName)
+    })
+
+    function SaveSchCand(){
+        var obj={
+            testId:parseInt(id),
+            testName:testName,
+            userId:user.UserId,
+            startTime:$('#txtStartTime').val(),
+            endTime:$('#txtEndTime').val(),
+            candidates:[]
+            }
+            $('tbody tr').each(function(){
+                var cand = {
+                    email:$(this).find($('.email')).val(),
+                    name:$(this).find($('.name')).val()
+                }
+              obj.candidates.push(cand);
+            })
+
+        $.ajax({
+            url:baseUrl + "tp/SaveSchCandDetail",
+            type:"POST",
+            contentType:"application/json",
+            async:false,
+            data:JSON.stringify(obj),
+            success:function(resp){
+                Swal.fire('Done','Saved Successfully','success');
+            },
+            error:function(err){
+                Swal.fire('OOPS','Failed To Saved','error');
+            }
+
+        })
+    }
+
+    $(document).on('click','.btnAdd',function(){
+        var y = $(this).closest($('tbody')).find($('.btnRmv')).length
+        console.log(y)
+        if(y<1){
+            $(this).closest($('tbody')).find($('td')).last().prepend($('#tmplRmv').html())
+        }
+        $("tbody").append($("#tmplMain").html());
+        $(this).remove();
+
+    })
+    $(document).on('click','.btnRmv',function(){
+
+        $(this).closest($('tr')).remove();
+        var z = $('#divInput .col-md-4').last().find('.btnAdd').length
+        console.log(z);
+        if($('tbody tr').last().find($('.btnAdd')).length<1){
+            $("tbody tr").last().find($('.tdAdd')).append($('#tmplAdd').html())
+        }
+        if($('tbody tr').length==1){
+            $("tbody tr td").last().find($('.btnRmv')).remove();
+        }
+    })
+</script>
+}

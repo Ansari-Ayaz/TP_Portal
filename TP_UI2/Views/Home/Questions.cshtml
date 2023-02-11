@@ -1,0 +1,307 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<style>
+    .marg {
+        margin: 1rem;
+    }
+</style>
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label>Number Of Question :</label>
+                <label id="lbNoQues"></label>
+            </div>
+            <div class="col-md-3">
+                <label>Points Per Question :</label>
+                <label id="lbPoQues"></label>
+            </div>
+            <div class="col-md-3 qDetail">
+                <label>Time Per Question :</label>
+                <label id="lbTmQues"></label>
+            </div>
+            <div class="col-md-3 qDetail">
+                <button id="btnSave" type="button" class="btn btn-primary" onclick="SaveQuesOpt()">Save</button>
+                <button id="btnUpdate" type="button" class="btn btn-primary" onclick="UpdateQuesOpt()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="divMain"></div>
+<template class="tmplMain">
+    <div class="card">
+        <div class="card-body">
+            <div class="row qSet">
+                <div class="col-md-6 divQues">
+                    <label>Question :${count}</label>
+                    <textarea class="form-control question" type="text" placeholder="Type Question Here..." rows="3"></textarea>
+                </div>
+                <div class="col-md-6 divOpt" qno="${count}">
+                    <div class="row marg">
+                        <div class="col-md-1">
+                            <label>Opt: </label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control form-control-sm option">
+                        </div>
+                        <div class="col-sm-1">
+                            <input type="radio" name='rad_${count}' class="radio" checked>
+                        </div>
+                        <div class="col-md-3 last">
+                        </div>
+                    </div>
+                    <div class="row marg">
+                        <div class="col-md-1">
+                            <label>Opt: </label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control form-control-sm option">
+                        </div>
+                        <div class="col-sm-1">
+                            <input type="radio" name='rad_${count}' class="radio">
+                        </div>
+                        <div class="col-md-3 last">
+                            <button type="button" class="btn btn-sm btn-warning btnAdd">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template class="tmplOpt">
+    <div class="row marg">
+        <div class="col-md-1">
+            <label>Opt: </label>
+        </div>
+        <div class="col-sm-7">
+            <input type="text" class="form-control form-control-sm option">
+        </div>
+        <div class="col-sm-1">
+            <input type="radio" name="rad_${qno}" class="radio">
+        </div>
+        <div class="col-md-3 last">
+            <button type="button" class="btn btn-sm btn-warning btnAdd">Add</button>
+        </div>
+    </div>
+</template>
+<template class="tmplAdd">
+    <button type="button" class="btn btn-sm btn-warning btnAdd">Add</button>
+</template>
+<template class="tmplRmv">
+    <button type="button" class="btn btn-sm btn-danger btnRemove">Remove</button>
+</template>
+
+@*Templates for Edit*@
+<!-- count, qText, optRow -->
+<template id="tmplMain_Edit">
+    <div class="card">
+        <div class="card-body">
+            <div class="row qSet">
+                <div class="col-md-6 divQues" >
+                    <label>Question :${count}</label>
+                    <textarea class="form-control question" qid=${qId} type="text" placeholder="Type Question Here..." rows="3">${qText}</textarea>
+                </div>
+                <div class="col-md-6 divOpt" qno="${count}">
+                    ${optRow}
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<template id="tmplOptRow_Edit">
+    <div class="row marg" optid=${optId}>
+        <div class="col-md-1">
+            <label>Opt: </label>
+        </div>
+        <div class="col-sm-7">
+            <input type="text" value="${optText}" class="form-control form-control-sm option"/>
+        </div>
+        <div class="col-sm-1">
+            <input type="radio" name='rad_${count}' class="radio" ${iscorrect} />
+        </div>
+        <div class="col-md-3 last">
+        </div>
+    </div>
+</template>
+@section Scripts{
+<script>
+    var params = new URLSearchParams(window.location.search)
+    var id = params.get('Id');
+
+    $(document).ready(function(){
+       var test = GetTestById(id);
+       if(test.questions==null){
+            AddNewQuestionSet(test.tDetail);
+            $("#btnSave").show();
+           $("#btnUpdate").hide();
+       }else{
+           SetQuestionSet(test);
+           $("#btnSave").hide();
+           $("#btnUpdate").show();
+       }
+       console.log(test);
+    })
+
+    function GetTestById(id){
+        var test = null;
+        $.ajax({
+            url: baseUrl + "tp/GetQuesOptByTestId/"+id,
+            type:"GET",
+            contentType:"application/json",
+            async:false,
+            dataType:"JSON",
+            success:function(resp){
+                test = resp.respObj;
+            },
+            error:function(err){
+                test = null;
+            }
+        })
+        return test;
+    }
+    function AddNewQuestionSet(testDetail) {
+
+        $("#lbNoQues").text(testDetail.no_Of_Q)
+        $("#lbPoQues").text(testDetail.perQ_Point)
+        $("#lbTmQues").text(testDetail.perQ_Time_Min)
+        var count = 1;
+            while (count <= testDetail.no_Of_Q) {
+                $(".divMain").append(eval('`' + $(".tmplMain").html() + '`'));
+                count++;
+            }
+
+    }
+
+    function SetQuestionSet(data){
+        $("#lbNoQues").text(data.tDetail.no_Of_Q);
+        $("#lbPoQues").text(data.tDetail.perQ_Point);
+        $("#lbTmQues").text(data.tDetail.perQ_Time_Min);
+        //count, qText, optRow
+        var html = '';
+        var count = 1;
+        data.questions.forEach(q=>{
+            var qId = q.qId;
+            var qText = q.questionText;
+            var optRow = '';
+            
+            q.options.forEach(o=>{
+                //optText, isCorrect
+                var optId = o.optId;
+                var optText = o.optionText;
+                var iscorrect = (o.isCorrect) ? 'checked' : '';
+                optRow += eval('`'+$("#tmplOptRow_Edit").html()+'`')
+            })
+            html+= eval('`'+$("#tmplMain_Edit").html()+'`');
+            count++;
+        });
+        $('.divMain').append(html);
+    }
+
+    function SaveQuesOpt(){
+        var qSaveReq = {
+            loggedInUser:user.UserId,
+            testId:parseInt(id),
+            questions:[]
+        }
+        $(".divMain .qSet").each(function(){
+            var qSet = {
+                questionText:$(this).find('textarea').val(),
+                options:[]
+            }
+            $(this).find('.divOpt .row').each(function(){
+                var optSet = {
+                    optionText:$(this).find('.option').val(),
+                    isCorrect:$(this).find('.radio').prop('checked')
+                }
+                qSet.options.push(optSet);
+            })
+            qSaveReq.questions.push(qSet);
+        })
+        $.ajax({
+            url: baseUrl + "tp/SaveQuesAns",
+            type:"POST",
+            contentType:"application/json",
+            async:false,
+            data:JSON.stringify(qSaveReq),
+            success:function(resp){
+                Swal.fire('Saved','Saved Successfully','success')
+            },
+            error:function(err){
+                Swal.fire('OOPS','Failed to Save','error')
+            }
+        })
+    }
+    function UpdateQuesOpt(){
+        var qUpdateReq = {
+            loggedInUser:user.UserId,
+            testId:parseInt(id),
+            questions:[]
+        }
+        $(".divMain .qSet").each(function(){
+            var qSet = {
+                qId:$(this).find('textarea').attr('qid'),
+                questionText:$(this).find('textarea').val(),
+                options:[]
+            }
+            $(this).find('.divOpt .row').each(function(){
+                var optSet = {
+                    optId:$(this).find('textarea').attr('optid'),
+                    optionText:$(this).find('.option').val(),
+                    isCorrect:$(this).find('.radio').prop('checked')
+                }
+                qSet.options.push(optSet);
+            })
+            qUpdateReq.questions.push(qSet);
+        })
+        $.ajax({
+            url: baseUrl + "tp/UpdateQuesAns",
+            type:"POST",
+            contentType:"application/json",
+            async:false,
+            data:JSON.stringify(qUpdateReq),
+            success:function(resp){
+                Swal.fire('Saved','Update Successfully','success')
+            },
+            error:function(err){
+                Swal.fire('OOPS','Failed to Save','error')
+            }
+        })
+    }
+
+    $(document).on('click','.btnAdd',function(){
+        var mainDiv = $(this).closest('.divOpt');
+        var qno = $(this).closest('.divOpt').attr('qno');
+        $(this).closest('.divOpt').append(eval('`'+ $(".tmplOpt").html() +'`'));
+        $(this).remove();
+        ManageButtons(mainDiv);
+    })
+    $(document).on('click','.btnRemove',function(){
+        var mainDiv = $(this).closest('.divOpt');
+        $(this).closest('.row').remove();
+        ManageButtons(mainDiv);
+    })
+
+    function ManageButtons(el){
+        var options = $(el).find('.row').length;
+        if(options==2){
+            $(el).find('.btnRemove').remove();
+        }
+        if(options>2){
+            $(el).find('.btnRemove').remove();
+            $(el).find('.row').each(function(){
+                $(this).find('.last').append($('.tmplRmv').html())
+            })
+        }
+        $(el).find('.btnAdd').remove();
+        if(options<4){
+            $(el).find('.row').last().find('.last').prepend($('.tmplAdd').html())
+        }
+    }
+</script>
+}

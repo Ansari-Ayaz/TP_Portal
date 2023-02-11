@@ -1,0 +1,156 @@
+﻿@using Microsoft.AspNetCore.Html
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AdminLTE 3 | Dashboard</title>
+    <link rel="stylesheet" href="~/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css">
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/plugins/moment/moment.min.js"></script>
+    <script src="~/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"/>
+</head>
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link text-light" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+    <br>
+    <div style="width:70%" class="container">
+        <div class="jumbotron">
+            <h1 id="questionText" quesId="0">Sample Question?</h1>
+            <hr />
+            <div id="divOpt">
+            </div>
+            <button id="btnNext" class="btn btn-primary" style="float:right" onclick="NextQuestion()">Next</button>
+            <button id="btnSubmit" class="btn btn-primary" style="float:right" onclick="SaveCandAnswer()">Submit</button>
+        </div>
+    </div>
+    <template id="tmplOpt">
+        <div class="form-check">
+            <label class="form-check-label">
+                <input type="radio" class="form-check-input ans" optId="${optId}" name="${qNo}">${optText}
+            </label>
+        </div>
+    </template>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var baseUrl = '@_config["Config:Api"]';
+        var count = 0;
+        var ques=[];
+        var quOs = [];
+        var testObj;
+        var candidate = @(new HtmlString(_hca.HttpContext.Session.GetString("Canduser")??"null"));
+
+        $(document).ready(function(){
+           count = 0;
+           GetQuesOptByTestId(candidate.TestId);
+           DisplayQuestion();
+           CheckCounterQuestionLength();
+        })
+
+        function CaptureAnswer(){
+            quOs.push({
+                        qId:parseInt($("#questionText").attr("quesId")),
+                        optId:$("input:radio.ans:checked").attr('optId') ? parseInt($("input:radio.ans:checked").attr('optId')):0 
+                      })
+        }
+        function CheckCounterQuestionLength(){
+            if((ques.length-1)==count){
+                $("#btnNext").hide();
+                $("#btnSubmit").show();
+            }else{
+                $("#btnNext").show();
+                $("#btnSubmit").hide();
+            }
+        }
+        function SaveCandAnswer(){
+            CaptureAnswer();
+            var candResult = {
+                testId:candidate.TestId,
+                candId:candidate.CId,
+                scheduleId:candidate.ScheduleId,
+                qOs:quOs
+            }
+            $.ajax({
+                url:baseUrl+"tp/SaveCandTest",
+                type:"POST",
+                contentType:"application/json",
+                data:JSON.stringify(candResult),
+                async:false,
+                success:function(resp){
+                    Swal.fire("Done","Test Saved Successfully","success");
+                    window.location.href = window.location.origin + "/Home/CandidateLogin"
+                },
+                error:function(err){
+                    Swal.fire("OOPS","Something Went Wrong","error");
+                }
+            })
+        }
+
+        function DisplayQuestion(){
+           var q = ques[count]
+           $("#questionText").attr("quesId",q.qId);
+           $("#questionText").html("Q"+ (count+1) +": " + q.questionText + "?");
+            var optHtml = "";
+            q.options.forEach(o=>{
+                var optId = o.optId;
+                var optText = o.optionText;
+                var qNo = count;
+                optHtml += eval('`'+$("#tmplOpt").html()+'`')
+            })
+            $('#divOpt').html('');
+            $('#divOpt').append(optHtml);
+            setTimeout(() => {
+                NextQuestion();
+            }, (testObj.perQ_Time_Min*60000));
+        }
+
+
+        function GetQuesOptByTestId(id){
+            $.ajax({
+                url:baseUrl+"tp/GetCandQOByTestId/"+id,
+                type:"GET",
+                contentType:"application/json",
+                async:false,
+                dataType:"JSON",
+                success:function(resp){
+                    if(resp.resp){
+                        ques = resp.respObj.questions;
+                        testObj = resp.respObj.tDetail;
+                    }
+                },
+                error:function(err){
+                    Swal.fire("OOPS","Something Went Wrong","error")
+                }
+            })
+        }
+        function NextQuestion(){
+            count++;
+            CaptureAnswer();
+            DisplayQuestion();
+            CheckCounterQuestionLength()
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,58 @@
+﻿@using Microsoft.AspNetCore.Html
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AdminLTE 3 | Dashboard</title>
+    <link rel="stylesheet" href="~/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+    <link rel="stylesheet" href="~/dist/css/adminlte.min.css">
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/plugins/moment/moment.min.js"></script>
+    <script src="~/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+</head>
+<body>
+    <div class="conatiner">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="text-center">Welcome <span id="lblUserName" class="text-bold"></span>, you have been assigned following test:</h5>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-10">
+                        <label>Test Name :</label>
+                        <label id="lblTestName"> :</label>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="btnStart" class="btn btn-primary" style="margin-left:100px;" onclick="SwitchToCandTest(candidate.TestId)">Start</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var candidate = @(new HtmlString(_hca.HttpContext.Session.GetString("Canduser")??"null"));
+        $(document).ready(function(){
+            $("#lblUserName").html(candidate.Name);
+            $("#lblTestName").html(candidate.TestName);
+        })
+        function SwitchToCandTest(){
+            window.location.href = window.location.origin+"/Home/CandidateTest"
+        }
+    </script>
+</body>
+</html>
+
+
+

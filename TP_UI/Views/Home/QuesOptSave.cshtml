@@ -1,0 +1,124 @@
+﻿<style>
+    .txtQues {
+        padding: 40px;
+    }
+</style>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Number Of Questions: </label>
+                <label id="lbQues"></label>
+            </div>
+            <div class="col-md-4">
+                <label>Minutes Per Question: </label>
+                <label id="lbMin"></label>
+            </div>
+            <div class="col-md-4">
+                <label>Points Per Question: </label>
+                <label id="lbPoint"></label>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div id="divMain">
+        </div>
+    </div>
+</div>
+
+<template id="tmpl_queSet">
+    <div class="row">
+        <div class="col-md-4 quDiv">
+            <div class="form-group">
+                <label>Question : ${qCount}</label>
+                <textarea class="form-control queText" placeholder="Type question here.." rows="3"></textarea>
+            </div>
+        </div>
+        <div class="col-md-8 optDiv">
+            <div class="row">
+                <div class="col-md-2">
+                    <label>Opt 1:</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control form-control-sm optText" />
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group form-check">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox"> Remember me
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <label>Opt 2:</label>
+                </div>
+                <div class="col-md-6">
+                    <input class="form-control form-control-sm optText" />
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-warning btn-sm btnAddOpt">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr />
+</template>
+
+
+<template id="tmpl_opt">
+    <div class="row">
+        <div class="col-md-2">
+            <label>Opt 1:</label>
+        </div>
+        <div class="col-md-6">
+            <input class="form-control form-control-sm optText" />
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-warning btn-sm btnAddOpt">Add</button>
+            <button class="btn btn-danger btn-sm btnAddOpt">Remove</button>
+        </div>
+    </div>
+</template>
+@section Scripts{
+<script>
+    var params = new URLSearchParams(window.location.search);
+    var Id = params.get("Id")
+    $(document).ready(function(){
+        //ViewTestById(Id);
+    })
+
+    function ViewTestById(Id){
+        $.ajax({
+            url:"https://localhost:44327/api/TP/ViewTestById/"+Id,
+            type:"GET",
+            contentType:"application/json",
+            async:false,
+            success:function(resp){
+                $("#lbQues").text(resp.respObj.no_Of_Q);
+                $("#lbMin").text(resp.respObj.perQ_Time_Min);
+                $("#lbPoint").text(resp.respObj.perQ_Point);
+
+                var qCount=1;
+                while(qCount<=resp.respObj.no_Of_Q){
+                    $("#divMain").append(eval('`'+$('#tmpl_queSet').html()+'`'));
+                    qCount++;
+                }
+            },
+            error:function(err){
+                swal("Something Went Wrong","Not Found Test","error")
+            }
+        })
+    }
+    
+    $(document).on('click','.btnAddOpt',function(){
+        $(this).closest('.optDiv').append($('#tmpl_opt').html())
+    })
+</script>
+}
